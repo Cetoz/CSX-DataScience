@@ -1,0 +1,43 @@
+---
+title: "hw_2"
+author: "FU-HUNG"
+date: "2018年3月14日"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Crawler - 台大網頁
+
+**載入rvest**
+```{r install packages}
+install.packages('rvest',repos= 'http://ftp5.gwdg.de/pub/misc/cran/')
+library(rvest)
+```
+1. 讀取台大首頁
+```{r}
+ntu_news <- read_html("http://www.ntu.edu.tw/")
+```
+2. 擷取新聞標題
+```{r}
+title <- ntu_news%>%html_nodes('#news p')%>%html_text()
+```
+3. 擷取新聞連結
+```{r}
+url<- ntu_news%>%html_nodes('#news a')%>%html_attr('href')
+```
+4. 刪除無關連結
+```{r}
+url <- url[2:13]
+```
+5. 用Dataframe型態儲存資料
+```{r}
+news_df <- data.frame(Title=title,Url=url)
+```
+6. 輸出結果
+```{r}
+print(news_df)
+```
+
