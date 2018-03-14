@@ -20,3 +20,4 @@ Before class
 In class
 
 At home
+Finish homework2(hw_2.R,hw_2.Rmd,hw_2.html)

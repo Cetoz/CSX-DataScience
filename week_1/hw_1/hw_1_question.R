@@ -75,10 +75,25 @@ if (year%%4!=0){
 # 1. 請寫一個由電腦隨機產生不同數字的四位數(1A2B遊戲)
 # 2. 玩家可重覆猜電腦所產生的數字，並提示猜測的結果(EX:1A2B)
 # 3. 一旦猜對，系統可自動計算玩家猜測的次數
-Ans<-sample(1000:9999,size = 1)
-
-
-
-
-
-
+Ans<-sample(c(0:9),size = 4)
+Count <- 0
+A <- 0
+B <- 0
+while(A!=4){
+  Count <- Count+1
+  A <- 0
+  B <- 0
+  input <- scan(nmax = 4)
+  for(i in c(1:4)){
+    if(input[i]==Ans[i]){
+      A <- A+1
+    }else{
+      for(j in c(1:4)){
+        if(input[i]==Ans[j]){
+          B <- B+1
+        }
+      }
+    }
+  }
+  print(paste0(A,'A',B,'B'))}
+print(paste('Correct!','Count:',Count,'times'))
