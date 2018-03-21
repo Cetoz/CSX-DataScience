@@ -1,0 +1,90 @@
+---
+title: "HW_3"
+author: "FU-HUNG"
+date: "2018年3月22日"
+output: html_document
+---
+## Loading Packages ##
+```{r, results='hide', message=FALSE, warning=FALSE}
+install.packages('ggplot2',repos = 'https://cloud.r-project.org/')
+install.packages('GGally',repos = 'https://cloud.r-project.org/')
+install.packages('Rmisc',repos = 'https://cloud.r-project.org/')
+library(ggplot2)
+library(Rmisc)
+library(GGally)
+```
+
+## 單變數：類別型-1 ##
+```{r}
+mpgdata <- mpg
+mpgdata$manufacturer <- as.factor(mpg$manufacturer)
+plot <- ggplot(data = mpg)
+
+plot+
+  geom_bar(aes(x=manufacturer),
+           stat = 'count',
+           fill='white',
+           color='black')+
+  ggtitle('Manufacturer Count')+
+  xlab('Manufacturer')+
+  ylab('Count')
+```
+
+## 單變數：類別型-2 ##
+```{r}
+plot+
+  geom_histogram(aes(x=class),
+                 stat = 'count')+
+  ggtitle('Car Types')+
+  xlab('Class')+
+  ylab('Count')
+```
+
+## 單變數：連續型 ##
+```{r}
+housing <- txhousing[txhousing$city=='Abilene',]
+
+plot3 <- ggplot(data = housing, aes(x=date,
+                                    y=volume))
+plot3+
+  geom_line()+
+  geom_smooth(method=lm,
+              se=FALSE)+
+  ggtitle('Housing market trading volume over time')+
+  xlab('Date')+
+  ylab('Volume')
+```
+
+## 雙變數：連續 - 連續 ##
+```{r}
+plot4 <- ggplot(data = iris, aes(x=Sepal.Length,
+                                 y=Petal.Length))
+p1 <- plot4+
+  geom_point()+
+  geom_smooth(method = lm)+
+  ggtitle('Sepal Length V.S. Petal Length')
+
+plot5 <- ggplot(data = iris, aes(x=Sepal.Width,
+                                 y=Petal.Width))
+p2 <- plot5+
+  geom_point()+
+  geom_smooth(method = lm)+
+  ggtitle('Sepal Width V.S. Petal Width')
+
+multiplot(p1,p2)
+```
+
+## 雙變數：離散 - 連續 ##
+```{r}
+plot6 <- ggplot(data = iris, aes(x=Species,
+                                 y=Sepal.Length))
+plot6+
+  geom_boxplot()+
+  ggtitle('Boxplot of Species-Sepal.Length')
+```
+
+## 多變數 ##
+```{r}
+ggpairs(data = iris)
+```
+
