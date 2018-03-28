@@ -1,0 +1,58 @@
+---
+title: "HW_4"
+author: "FU-HUNG"
+date: "2018年3月28日"
+output: html_document
+---
+
+# Word Cloud
+
+**Aim：擷取總統蔡英文Facebook近100則貼文，並以文字雲呈現關鍵字。**
+
+[蔡英文 Tsai Ing-wen Facebook Page](https://www.facebook.com/tsaiingwen/)
+
+## 1. 擷取近100則Facebook貼文
+
+```{r, results='hide', message=FALSE, warning=FALSE}
+install.packages('Rfacebook', repos = 
+'http://cran.csie.ntu.edu.tw/')
+library(Rfacebook)
+```
+
+```{r}
+token <- 'EAACEdEose0cBAC5YZAbdxFfiOZB1qixkAsEQeZB8pPKat7ZA1k6AElkqH5qlL3HaiDN2I3nuY2cBv3jDy73gYuBzYJOE82yAr25aEHtd2wW1XhsmhrjA0oliFX5UqKYv2enRunBztnJ9gEPnuqDG16KZCUCRzBFHNujgU6MfTAwbUXZCC93D8SmbE9KZBCK4ucZD'
+page.id <-46251501064
+page <- getPage(page.id, token=token, n = 100)
+```
+
+## 2. 使用jiebaR package斷詞
+
+```{r, results='hide', message=FALSE, warning=FALSE}
+install.packages('jiebaR', repos = 'http://cran.csie.ntu.edu.tw/')
+library(jiebaR)
+```
+
+```{r}
+cutter = worker(stop_word = 'stop_word.txt')  #設定斷詞引擎和停用詞
+docs <- gsub('[0-9a-zA-Z]','',page$message)  #去除數字、英文
+docs <- cutter[docs]  #使用jiebaR分詞
+docs<- table(docs)  #計算詞彙出現頻率
+docs <- data.frame(docs)
+head(docs[order(docs$Freq,decreasing = TRUE),])  #查看前五個出現頻率最高的詞彙
+
+```
+
+## 3. Word Cloud呈現關鍵字
+
+```{r, results='hide', message=FALSE, warning=FALSE}
+install.packages('wordcloud' ,repos = 'http://cran.csie.ntu.edu.tw/')
+library(wordcloud)
+```
+
+```{r}
+colors <- brewer.pal(5,'Dark2')  #設定文字雲顏色
+wordcloud(docs$docs,docs$Freq,
+          min.freq = 10,random.order = FALSE,colors = colors,random.color = TRUE)
+
+```
+
