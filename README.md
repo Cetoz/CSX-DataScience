@@ -15,7 +15,7 @@
 - Finish homework1(task5)  
 - Finish week1&week2 course pratice  
 
-**Homework2: https://cetoz.github.io/CSX-DataScience/week_5/hw_5.html**
+**Homework2: https://cetoz.github.io/CSX-DataScience/week_2/hw_2/hw_2.html**
 
 ## week03  
 - Learn ggplot2 syntax  
