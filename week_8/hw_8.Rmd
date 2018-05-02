@@ -1,0 +1,529 @@
+---
+title: "HW-8: ML Exercise on Titanic Dataset"
+author: "Group 2 崔芷瑄 韓曙憶 鄭富鴻"
+output:
+  html_document:
+    number_sections: true
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require("knitr")
+opts_knit$set(root.dir = "~/Desktop")
+```
+#Executive Summary
+Firstly we simply used an identity predictor showing whether the person was on life boat or not, and found out in all the three models the predictive results were same: people on life boat would survive and the rest would die. 
+
+Then we looked into the survival rate of different boats and classified them into a predictor showing the safe level of the boat.
+
+For prediction, we chose 4 predictors: BSafe (the suvival rate of each boat), PclassSex, GroupSize and FarePP, and applied three models: RM, SVM & GBM.
+
+In the training data, the results of SVM model and GBM model significantly have larger counts of false predictions.
+
+In the testing data, SVM model model predicts all those getting on life boat survived and the rest died. The result of GBM model is basiclly the same except the only one passenger on boat A is predicted to be dead, while in RF model there are 8 person who didn't get on life boat but survived (which are closer to the situation showed in the trainning dataset).
+
+Therefore we choose to merge the results of RF & GBM model and use it as our final result.
+
+
+# Loading and Exploring Data
+##Loading libraries required and reading the data into R
+
+Loading R packages used besides base R.
+
+```{r, message=FALSE, warning=FALSE}
+library(Hmisc)
+library(knitr)
+library(ggplot2)
+library(dplyr)
+library(caret)
+library(randomForest)
+library(gridExtra)
+library(ROCR)
+library(corrplot)
+```
+
+Reading the csv's as dataframes into R.
+
+```{r}
+train <- read.csv("titanicTrain.csv", stringsAsFactors = F, na.strings = c("NA", ""))
+test <- read.csv("titanicQuestion.csv", stringsAsFactors = F, na.strings = c("NA", ""))
+train <- train[1:1000,]
+```
+
+##Data size and structure
+
+Showing summaries:
+```{r}
+str(train)
+```
+
+Merging test and train:
+```{r}
+all <- rbind(train, test)
+```
+
+##Exploration and Feature Engineering
+
+```{r}
+all$sex <- as.factor(all$sex)
+all$survived <- as.factor(all$survived)
+all$pclass <- as.ordered(all$pclass) 
+```
+
+###The response variable; survived
+
+```{r, out.width="50%"}
+ggplot(all[!is.na(all$survived),], aes(x = survived, fill = survived)) +
+  geom_bar(stat='count') +
+  labs(x = 'How many people died and survived on the Titanic?') +
+        geom_label(stat='count',aes(label=..count..), size=7) +
+        theme_grey(base_size = 18)
+```
+
+###whether gets on life boat and the safe index of the boat
+Firstly we simply used an identity predictor showing whether the person was on life boat or not, and found out in all the three models the predictive results were same: people on life boat would survive and the rest would die. 
+Then we looked into the survival rate of diffrent boats and classified them into a predictor showing the safe level of the boat.
+```{r}
+all$onboat <- !is.na(all$boat)
+all$boat[is.na(all$boat)]<-"0"
+```
+
+```{r}
+all$boat<-as.factor(all$boat)
+```
+
+```{r}
+# onboat(survived)
+ggplot(all[!is.na(all$survived),], aes(x = onboat, fill = survived)) +
+  geom_bar(stat='count', position='dodge') + theme_grey() +
+  labs(x = 'Train data onboat(survived)') +
+  geom_label(stat='count', aes(label=..count..))
+```
+
+Almost all people got on boat survived and the rest died.
+
+```{r}
+# onboat(sex)
+ggplot(all[!is.na(all$survived),], aes(x = onboat, fill = sex)) +
+  geom_bar(stat='count', position='dodge') + theme_grey() +
+  labs(x = 'Train data onboat(sex)') +
+  geom_label(stat='count', aes(label=..count..))
+```
+
+Women has a higher rate of getting on life boat.
+
+```{r}
+# onboat(pclass)
+ggplot(all[!is.na(all$survived),], aes(x = onboat, fill = pclass)) +
+  geom_bar(stat='count', position='dodge') + theme_grey() +
+  labs(x = 'Train data onboat(pclass)')
+```
+
+```{r}
+ggplot(all[!is.na(all$survived),],aes(x=pclass,fill=onboat))+
+  geom_bar(stat='count',position = position_dodge())+
+  theme_grey()+
+  geom_label(stat = 'count',aes(label=..count..))
+```
+
+Those people in higher passenger class have a higher odd to getting on life boat.
+
+```{r}
+all$onboat = all$onboat *1
+```
+
+Check the survival rate on different boats:
+```{r}
+ggplot(all[!is.na(all$survived),], aes(x = boat, fill = survived))+    geom_bar(stat='count', position='stack') +
+   labs(x = 'Training data only', y= "Count") +
+         theme(legend.position="none") + 
+     theme_grey()
+```
+
+```{r}
+ggplot(all[!is.na(all$survived),], aes(x = boat, fill = survived))+
+   geom_bar(stat='count', position='fill') +
+   labs(x = 'Training data only', y= "Count") +
+        theme(legend.position="none") + theme_grey()
+```
+
+Calculate the survival rate of each boat(treat 0 as one boat too):
+```{r}
+boat_surv_rate<-all %>% 
+  filter(!is.na(all$survived)) %>% 
+  group_by(boat,survived) %>% 
+  summarise(Percentage=n()) %>% 
+  group_by(boat) %>% 
+  mutate(Percentage=Percentage/sum(Percentage)*100)
+boat_surv_rate <- boat_surv_rate[boat_surv_rate$survived==1,]
+boat_surv_rate[with(boat_surv_rate,order(Percentage)),]
+```
+
+Create a predictor showing safe index of each boat:
+```{r}
+all$BSafe <- 100
+all$BSafe[all$boat=="0"] <-2.4
+all$BSafe[all$boat=="A"] <-60.0
+all$BSafe[all$boat=="B"] <-83.3
+all$BSafe[all$boat=="D"] <-93.8
+all$BSafe[all$boat=="12"] <-94.7
+all$BSafe[all$boat=="14"] <-96.6
+```
+
+###Sex/gender
+```{r}
+p1 <- ggplot(all, aes(x = sex, fill = sex)) +
+  geom_bar(stat='count', position='dodge') + theme_grey() +
+  labs(x = 'All data') +
+        geom_label(stat='count', aes(label=..count..)) +
+        scale_fill_manual("legend", values = c("female" = "pink", "male" = "green"))
+p2 <- ggplot(all[!is.na(all$survived),], aes(x = sex, fill = survived)) +
+  geom_bar(stat='count', position='dodge') + theme_grey() +
+  labs(x = 'Training data only') +
+        geom_label(stat='count', aes(label=..count..))
+
+grid.arrange(p1,p2, nrow=1)
+```
+
+###Passenger Class
+```{r, out.width="100%"}
+p3 <- ggplot(all, aes(x = pclass, fill = pclass)) +
+  geom_bar(stat='count', position='dodge') +
+  labs(x = 'Pclass, All data') + geom_label(stat='count', aes(label=..count..)) +
+   theme(legend.position="none") + theme_grey()     
+p4 <- ggplot(all[!is.na(all$survived),], aes(x = pclass, fill = survived)) +
+  geom_bar(stat='count', position='dodge') + labs(x = 'Training data only') +
+        theme(legend.position="none") + theme_grey()
+p5 <- ggplot(all[!is.na(all$survived),], aes(x = pclass, fill = survived)) +
+  geom_bar(stat='count', position='stack') +
+  labs(x = 'Training data only', y= "Count") + facet_grid(.~sex) +
+        theme(legend.position="none") + theme_grey()
+p6 <- ggplot(all[!is.na(all$survived),], aes(x = pclass, fill = survived)) +
+  geom_bar(stat='count', position='fill') +
+  labs(x = 'Training data only', y= "Percent") + facet_grid(.~sex) +
+        theme(legend.position="none") + theme_grey()
+
+grid.arrange(p3, p4, p5, p6, ncol=2)
+```
+
+Combine Pclass and Sex as an predictor
+```{r}
+all$PclassSex[all$pclass=='1' & all$sex=='male'] <- 'P1Male'
+all$PclassSex[all$pclass=='2' & all$sex=='male'] <- 'P2Male'
+all$PclassSex[all$pclass=='3' & all$sex=='male'] <- 'P3Male'
+all$PclassSex[all$pclass=='1' & all$sex=='female'] <- 'P1Female'
+all$PclassSex[all$pclass=='2' & all$sex=='female'] <- 'P2Female'
+all$PclassSex[all$pclass=='3' & all$sex=='female'] <- 'P3Female'
+all$PclassSex <- as.factor(all$PclassSex)
+```
+
+
+###the Title variable
+Separate title and name
+
+```{r}
+#Extracting Title and Surname from Name
+all$Surname <- sapply(all$name, function(x) {strsplit(x, split='[,.]')[[1]][1]})
+ #correcting some surnames that also include a maiden name
+all$Surname <- sapply(all$Surname, function(x) {strsplit(x, split='[-]')[[1]][1]})
+all$Title <- sapply(all$name, function(x) {strsplit(x, split='[,.]')[[1]][2]})
+all$Title <- sub(' ', '', all$Title) #removing spaces before title
+kable(table(all$sex, all$Title))
+```
+
+reducing the number of titles to create better and more substantial Titles that can be used for prediction. 
+
+```{r}
+all$Title[all$Title %in% c("Mlle", "Ms")] <- "Miss"
+all$Title[all$Title== "Mme"] <- "Mrs"
+all$Title[!(all$Title %in% c('Master', 'Miss', 'Mr', 'Mrs'))] <- "Rare Title"
+all$Title <- as.factor(all$Title)
+kable(table(all$sex, all$Title))
+```
+
+```{r}
+ggplot(all[!is.na(all$survived),], aes(x = Title, fill = survived)) +
+  geom_bar(stat='count', position='stack') +
+  labs(x = 'Title') +theme_grey()
+```
+
+###Group size (max of family size and ticket size)
+
+family size
+
+```{r, message=FALSE}
+#creating family size variable (Fsize)
+all$Fsize <- all$sibsp+all$parch +1
+```
+
+Solo travelers had a much higher chance to die than to survive. In addition, people traveling in families of 2-4 people actually had a relatively high chance to survive. This chance is significantly lower among 5+ families.
+
+```{r}
+ggplot(all[!is.na(all$survived),], aes(x = Fsize, fill = survived)) +
+  geom_bar(stat='count', position='dodge') +
+  scale_x_continuous(breaks=c(1:11)) +
+  labs(x = 'Family Size') + theme_grey()
+```
+
+ticket size
+
+adding the number of people on each ticket as variable.
+
+```{r}
+#composing data frame with group size for each Ticket
+TicketGroup <- all %>%
+        select(ticket) %>%
+        group_by(ticket) %>%
+        summarise(Tsize=n())
+all <- left_join(all, TicketGroup, by = "ticket")
+```
+
+
+```{r}
+ggplot(all[!is.na(all$survived),], aes(x = Tsize, fill = survived)) +
+  geom_bar(stat='count', position='dodge') +
+  scale_x_continuous(breaks=c(1:11)) +
+  labs(x = 'Ticket Size') + theme_grey()
+```
+
+created  factorized variable for the group sizes.
+
+```{r}
+#taking the max of family and ticket size as the group size
+all$Group <- all$Fsize
+for (i in 1:nrow(all)){
+           all$Group[i] <- max(all$Group[i], all$Tsize[i])
+}
+
+#Creating final group categories
+all$GroupSize[all$Group==1] <- 'solo'
+all$GroupSize[all$Group==2] <- 'duo'
+all$GroupSize[all$Group>=3 & all$Group<=4] <- 'group'
+all$GroupSize[all$Group>=5] <- 'large group'
+all$GroupSize <- as.factor(all$GroupSize)
+```
+
+
+```{r}
+g1 <- ggplot(all[!is.na(all$survived),], aes(x = Group, fill = survived)) +
+  geom_bar(stat='count', position='dodge') +
+  scale_x_continuous(breaks=c(1:11)) +
+  labs(x = 'Final Group Sizes') + theme_grey()
+
+g2 <- ggplot(all[!is.na(all$survived),], aes(x = GroupSize, fill = survived)) +
+  geom_bar(stat='count', position='dodge') +
+  labs(x = 'Final Group Categories') + theme_grey() +
+        scale_x_discrete (limits = c('solo', 'duo', 'group', 'large group'))
+grid.arrange(g2, g1)
+```
+
+###the FarePP variable
+
+deal with the missing values
+```{r}
+#display passengers with missing Embarked
+kable(all[which(is.na(all$embarked)),c('Surname', 'Title', 'survived', 'pclass', 'age', 'sibsp', 'parch', 'ticket', 'fare', 'cabin', 'embarked', 'Group') ])
+```
+
+impute the missing embarkement city with the median Fare Per Person for each Embarkement city, and per Pclass.
+
+```{r}
+all$FarePP <- all$fare/all$Tsize #creating the Fare Per Person variable
+
+tab2 <- all[(!is.na(all$embarked) & !is.na(all$fare)),] %>%
+        group_by(embarked, pclass) %>%
+        summarise(FarePP=median(FarePP))
+kable(tab2)
+```
+
+As the FarePP of those two women is 40, they most likely embarked at Cherbourgh.
+
+```{r}
+#imputing missing Embarked values
+all$embarked[all$ticket=='113572'] <- 'C'
+#converting Embarked into a factor
+all$embarked <- as.factor(all$embarked)
+```
+
+I can actually use the same table to find a sensible fare for Mr Story. As you can see below, he traveled 3rd class and embarked at Southampton. 
+
+```{r}
+#display passengers with missing Fare
+kable(all[which(is.na(all$fare)), c('Surname', 'Title', 'survived', 'pclass', 'age', 'sibsp', 'parch', 'ticket', 'fare', 'cabin', 'embarked', 'Group','FarePP')])
+```
+
+```{r}
+#imputing FarePP (as the Fare will be dropped later on anyway)
+all$FarePP[1226] <- 7.8
+```
+
+The Fare Per Person Variable
+
+adjust zero fare value: replacing these values by the median FarePP's for each Pclass.
+
+```{r}
+tab3 <- all[(!is.na(all$FarePP)),] %>%
+        group_by(pclass) %>%
+        summarise(MedianFarePP=median(FarePP))
+all <- left_join(all, tab3, by = "pclass")
+all$FarePP[which(all$FarePP==0)] <- all$MedianFarePP[which(all$FarePP==0)]
+```
+
+
+
+```{r}
+ggplot(all, aes(x=FarePP)) +
+        geom_histogram(binwidth = 5, fill='blue') + theme_grey() +
+        scale_x_continuous(breaks= seq(0, 150, by=10))
+```
+
+
+#Predictions 
+
+```{r}
+#splitting data into train and test set again
+trainClean <- all[1:1000,]
+testClean <- all[1001:1309,]
+```
+
+##Random Forest model
+
+```{r}
+set.seed(2017)
+caret_matrix <- train(x=trainClean[,c('BSafe','PclassSex', 'GroupSize', 'FarePP')], y=trainClean$survived, data=trainClean, method='rf', trControl=trainControl(method="cv", number=5))
+caret_matrix
+caret_matrix$results
+```
+
+```{r}
+#extracting variable importance and make graph with ggplot (looks nicer that the standard varImpPlot)
+rf_imp <- varImp(caret_matrix, scale = FALSE)
+rf_imp <- rf_imp$importance
+rf_gini <- data.frame(Variables = row.names(rf_imp), MeanDecreaseGini = rf_imp$Overall)
+
+ggplot(rf_gini, aes(x=reorder(Variables, MeanDecreaseGini), y=MeanDecreaseGini, fill=MeanDecreaseGini)) +
+        geom_bar(stat='identity') + coord_flip() + theme(legend.position="none") + labs(x="") +
+        ggtitle('Variable Importance Random Forest') + theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+#using the model to make Survival predictions on the test set
+solution_rf <- predict(caret_matrix, testClean)
+```
+
+##Support Vector Machine (SVM) model
+
+
+```{r}
+set.seed(2017)
+caret_svm <- train(survived~ BSafe+PclassSex + GroupSize+ FarePP, data=trainClean, method='svmRadial', preProcess= c('center', 'scale'), trControl=trainControl(method="cv", number=3))
+caret_svm
+caret_svm$results
+```
+
+```{r}
+#using the model to make Survival predictions on the test set
+solution_svm <- predict(caret_svm, testClean)
+```
+
+##Gradient Boosting Machine (GBM) model
+
+```{r}
+set.seed(2017)
+caret_boost <- train(survived~ BSafe + PclassSex + GroupSize + FarePP , data=trainClean, method='gbm', preProcess= c('center', 'scale'), trControl=trainControl(method="cv", number=7), verbose=FALSE)
+print(caret_boost)
+```
+
+```{r}
+#using the model to make Survival predictions on the test set
+solution_boost <- predict(caret_boost, testClean)
+```
+
+##Correlations of the results from the three models:
+```{r}
+#adding model predictions to test dataframe
+testClean$RF <- as.numeric(solution_rf)-1
+testClean$SVM <- as.numeric(solution_svm)-1
+testClean$Boost <- as.numeric(solution_boost)-1
+
+#compose correlations plot
+corrplot.mixed(cor(testClean[, c('RF', 'SVM', 'Boost')]), order="hclust", tl.col="black")
+```
+
+##Show the performance of these three model:
+Blue:false positives (predicted to survive, but died).
+Red: False Negatives (predicted to die, but survived) 
+```{r}
+#predictions of the models on the training set
+trainClean$RF <- predict(caret_matrix, trainClean)
+trainClean$SVM <- predict(caret_svm, trainClean)
+trainClean$Boost <- predict(caret_boost, trainClean)
+
+
+#plot differences between actual survived and predictions
+f1 <- ggplot(trainClean[trainClean$survived != trainClean$RF,], aes(x=as.factor(BSafe), fill=RF)) +
+        geom_bar(stat='count') + labs(title="FP and FN, RF model") + theme_grey() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+        theme(legend.position="none") + xlab("")
+
+f2 <- ggplot(trainClean[trainClean$survived != trainClean$SVM,], aes(x=as.factor(BSafe), fill=SVM)) +
+        geom_bar(stat='count')+ labs(title="FP and FN, SVM") + theme_grey() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+        theme(legend.position="none") + xlab("")
+
+f3 <- ggplot(trainClean[trainClean$survived != trainClean$Boost,], aes(x=as.factor(BSafe), fill=Boost)) +
+        geom_bar(stat='count')+ labs(title="FP and FN, GBM") + theme_grey() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+        theme(legend.position="none") + xlab("")
+
+grid.arrange(f1, f2, f3, nrow = 1)
+```
+
+
+#Analysis and choose the final model
+
+##analysis:
+On training data, the result of SVM model and GBM model are significantly have larger count of false predictions.
+
+On the test data, SVM model model predict all those getting on life boat are survived and the rest died. The result of GBM model is basiclly the same except the only one passenger on boat A is predicted to be dead, while in RF model there are 8 person who didn't get on life boat but survived (which are closer to the situation showed in the trainning dataset).
+
+```{r}
+pp1 = ggplot(testClean, aes(x = as.factor(onboat), fill = as.factor(RF))) +
+  geom_bar(stat='count', position='dodge') + theme_grey() +
+  labs(x = 'whether get on boat',y='RF Survive') +
+  geom_label(stat='count', aes(label=..count..))
+
+pp2 = ggplot(testClean, aes(x = as.factor(onboat), fill = as.factor(SVM))) +
+  geom_bar(stat='count', position='dodge') + theme_grey() +
+  labs(x = 'whether get on boat',y='SVM Survive') +
+  geom_label(stat='count', aes(label=..count..))
+
+pp3 = ggplot(testClean, aes(x = as.factor(onboat), fill = as.factor(Boost))) +
+  geom_bar(stat='count', position='dodge') + theme_grey() +
+  labs(x = 'whether get on boat',y='GBM Survive') +
+  geom_label(stat='count', aes(label=..count..))
+
+grid.arrange(pp1, pp2, pp3,ncol=1)
+```
+
+```{r}
+#in RF model there are 8 person who didn't get on life boat but survived
+testClean[testClean$onboat==FALSE &testClean$RF==1,]
+#in GBM model the only one passenger on boat A is predicted to be dead
+testClean[testClean$onboat==TRUE &testClean$Boost==0,]
+```
+
+
+
+Therefore we choose to merge the results of RF & GBM model and use it as our final result.
+
+##output result:
+```{r}
+test_result <- read.csv("titanicQuestion.csv", stringsAsFactors = F, na.strings = c("NA", ""))
+testClean$result <-testClean$RF
+testClean$result[testClean$onboat==TRUE &testClean$Boost==0] <-0
+test_result$survived <- testClean$result
+write.csv(test_result, file = "test_result.csv")
+```
+
