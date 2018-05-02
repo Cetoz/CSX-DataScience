@@ -33,3 +33,7 @@
 ## week05  
 
 **Homework5: https://cetoz.github.io/CSX-DataScience/week_5/hw_5.html**
+
+## week08
+
+**Homework8: https://cetoz.github.io/CSX-DataScience/week_8/hw_8.html**
