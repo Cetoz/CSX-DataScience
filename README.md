@@ -1,39 +1,65 @@
-# CSX_Data Science Programming_2018
+# NTU Data Science Programming_2018
+
+106-2 Data Science for R  
+
+經濟系四年級_鄭富鴻
+
+##Progress&Homework
+### Week01  
+Topic：R語言基本介紹以及基本語法  
+
+**[Homework1](https://github.com/Cetoz/CSX-DataScience/blob/master/week_1/hw_1/hw_1_question.R)**
+>練習使用R語言基本語法  
+
+### Week02  
+Topic：網頁爬蟲以及Markdown語法  
+
+**[Homework2](https://cetoz.github.io/CSX-DataScience/week_2/hw_2/hw_2.html)**
+>使用R語言爬蟲擷取台大首頁新聞
+
+### Week03  
+Topic：練習ggplot資料視覺化  
+
+**[Homework3](https://cetoz.github.io/CSX-DataScience/week_3/hw_3.html)**
+>使用R語言內建資料練習ggplot繪圖功能  
+
+### Week04
+Topic：使用API爬蟲以及資料視覺化  
+
+**[Homework4](https://cetoz.github.io/CSX-DataScience/week_4/hw_4.html)**
+>擷取總統蔡英文Facebook近100則貼文，並以文字雲呈現關鍵字。  
+
+參考資料：[Facebook For Developers](https://developers.facebook.com)
+### Week05  
+Topic：TF-IDF  
+  
+**[Homework5](https://cetoz.github.io/CSX-DataScience/week_5/hw_5.html)**
+>利用TF-IDF文本分析擷取文章關鍵字。  
+
+參考資料：  
+[EDA1](http://r4ds.had.co.nz/exploratory-data-analysis.html#introduction-3)  
+[EDA2](https://yijutseng.github.io/DataScienceRBook/eda.html)  
+[文字探勘之前處理與TF-IDF介紹](http://www.cc.ntu.edu.tw/chinese/epaper/0031/20141220_3103.html)  
+[PTT Boy-Girl](https://ntu-csx-datascience.github.io/106-2RSampleCode/week_6/course_6/PTTBoyGirl.html)
+### Week06  
+
+Topic：How To Think About What Data Science Projects
+
+###Week07
+
+Topic：ML/DL Resources
+
+### Week08
+
+Topic：Machine Learning  
+  
+**[Project1](https://cetoz.github.io/CSX-DataScience/week_8/hw_8.html)**
+>利用Machine Learning預測鐵達尼號生還乘客。
 
 
-
-## week01  
-- Install R & RStudio  
-- Register for GitHub Account  
-- Install GitHub Desktop  
-- Finish homework 1's task 1-task 4  
-
-**Homework1: https://github.com/Cetoz/CSX-DataScience/blob/master/week_1/hw_1/hw_1_question.R**
-
-## week02  
-- Finish homework2(hw_2.R,hw_2.Rmd,hw_2.html)   
-- Finish homework1(task5)  
-- Finish week1&week2 course pratice  
-
-**Homework2: https://cetoz.github.io/CSX-DataScience/week_2/hw_2/hw_2.html**
-
-## week03  
-- Learn ggplot2 syntax  
-- Finish homework3  
-
-**Homework3: https://cetoz.github.io/CSX-DataScience/week_3/hw_3.html**
-
-## week04
-- Learn Scrap with Open API
-- Learn TextMining
-- Finish homework4  
-
-**Homework4: https://cetoz.github.io/CSX-DataScience/week_4/hw_4.html**
-
-## week05  
-
-**Homework5: https://cetoz.github.io/CSX-DataScience/week_5/hw_5.html**
-
-## week08
-
-**Homework8: https://cetoz.github.io/CSX-DataScience/week_8/hw_8.html**
+---
+- [DataScience_Gitbook](https://pecu.gitbooks.io/r_/content/)
+- [DataScience_GitHub](https://github.com/NTU-CSX-DataScience/106-2RSampleCode)
+- [Markdown_語法備忘錄](https://markdown.tw)  
+- [R Keyboard Shortcuts](https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts)
+- [The Comprehensive R Archive Network](https://cran.r-project.org/)
