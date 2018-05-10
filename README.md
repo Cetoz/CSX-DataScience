@@ -4,7 +4,7 @@
 
 經濟系四年級_鄭富鴻
 
-##Progress&Homework  
+## Progress&Homework  
 ### Week01  
 Topic：R語言基本介紹以及基本語法  
 
@@ -45,7 +45,7 @@ Topic：TF-IDF
 
 Topic：How To Think About What Data Science Projects  
 
-###Week07
+### Week07
 
 Topic：ML/DL Resources
 
