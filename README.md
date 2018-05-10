@@ -4,7 +4,7 @@
 
 經濟系四年級_鄭富鴻
 
-##Progress&Homework
+##Progress&Homework  
 ### Week01  
 Topic：R語言基本介紹以及基本語法  
 
@@ -43,7 +43,7 @@ Topic：TF-IDF
 [PTT Boy-Girl](https://ntu-csx-datascience.github.io/106-2RSampleCode/week_6/course_6/PTTBoyGirl.html)
 ### Week06  
 
-Topic：How To Think About What Data Science Projects
+Topic：How To Think About What Data Science Projects  
 
 ###Week07
 
