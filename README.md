@@ -33,7 +33,7 @@ Topic：使用API爬蟲以及資料視覺化
 ### Week05  
 Topic：TF-IDF  
   
-**[Homework5](https://cetoz.github.io/CSX-DataScience/week_5/hw_5.html)**
+**[Project1](https://cetoz.github.io/CSX-DataScience/week_5/hw_5.html)**
 >利用TF-IDF文本分析擷取文章關鍵字。  
 
 參考資料：  
@@ -53,7 +53,7 @@ Topic：ML/DL Resources
 
 Topic：Machine Learning  
   
-**[Project1](https://cetoz.github.io/CSX-DataScience/week_8/hw_8.html)**
+**[Project3](https://cetoz.github.io/CSX-DataScience/week_8/Project3.html)**
 >利用Machine Learning預測鐵達尼號生還乘客。
 
 ### Week09
@@ -61,8 +61,8 @@ Topic：Machine Learning
 
 ### Week10
 Topic: Apriori  
-**[Kaggle Presentation](https://cetoz.github.io/CSX-DataScience/Kaggle%20Presentation/Instacart.html)**  
-**[Homework10](https://cetoz.github.io/CSX-DataScience/week_10/hw_10.html)**  
+**[Project2-Kaggle Presentation](https://cetoz.github.io/CSX-DataScience/Kaggle%20Presentation/Project2.html)**  
+**[Project4](https://cetoz.github.io/CSX-DataScience/week_10/Project4.html)**  
 >使用Kaggle Instacart交易資料集，運用Apriori Algorithm找出關聯項  
 
 參考資料：  
