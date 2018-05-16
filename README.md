@@ -56,10 +56,17 @@ Topic：Machine Learning
 **[Project1](https://cetoz.github.io/CSX-DataScience/week_8/hw_8.html)**
 >利用Machine Learning預測鐵達尼號生還乘客。
 
+### Week09
+
+
+### Week10
+Topic: Apriori  
+參考資料：  
+[R軟體資料探勘實務(中)—關聯模型](http://www.cc.ntu.edu.tw/chinese/epaper/0036/20160321_3606.html)  
+[Apriori Algorithm](https://www.youtube.com/watch?v=WGlMlS_Yydk)
 
 ---
 - [DataScience_Gitbook](https://pecu.gitbooks.io/r_/content/)
 - [DataScience_GitHub](https://github.com/NTU-CSX-DataScience/106-2RSampleCode)
 - [Markdown_語法備忘錄](https://markdown.tw)  
-- [R Keyboard Shortcuts](https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts)
 - [The Comprehensive R Archive Network](https://cran.r-project.org/)
