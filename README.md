@@ -60,7 +60,10 @@ Topic：Machine Learning
 
 
 ### Week10
-Topic: Apriori  
+Topic: Apriori
+**[Homework10](https://cetoz.github.io/CSX-DataScience/week_10/hw_10.html)**  
+>使用Kaggle Instacart交易資料集，運用Apriori Algorithm找出關聯項  
+
 參考資料：  
 [R軟體資料探勘實務(中)—關聯模型](http://www.cc.ntu.edu.tw/chinese/epaper/0036/20160321_3606.html)  
 [Apriori Algorithm](https://www.youtube.com/watch?v=WGlMlS_Yydk)
