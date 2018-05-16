@@ -5,9 +5,9 @@ date: "2018年3月28日"
 output: html_document
 ---
 
-# Word Cloud
+# Word Cloud  
 
-**Aim：擷取總統蔡英文Facebook近100則貼文，並以文字雲呈現關鍵字。**
+**Aim：擷取總統蔡英文Facebook近100則貼文，並以文字雲呈現關鍵字。**  
 
 [蔡英文 Tsai Ing-wen Facebook Page](https://www.facebook.com/tsaiingwen/)
 

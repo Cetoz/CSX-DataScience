@@ -1,20 +1,18 @@
 ---
-title: "hw_2"
+title: "HW_2"
 author: "FU-HUNG"
 date: "2018年3月14日"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+# R Crawler  
 
-## R Crawler - 台大網頁
+**Aim：練習使用R Crawler爬取台大首頁新聞，並輸出結果**  
 
 **載入rvest**
 ```{r install packages}
-install.packages('rvest',repos= 'http://ftp5.gwdg.de/pub/misc/cran/')
 library(rvest)
+library(knitr)
 ```
 1. 讀取台大首頁
 ```{r}
@@ -30,7 +28,7 @@ url<- ntu_news%>%html_nodes('#news a')%>%html_attr('href')
 ```
 4. 刪除無關連結
 ```{r}
-url <- url[2:13]
+url <- url[2:14]
 ```
 5. 用Dataframe型態儲存資料
 ```{r}
@@ -38,6 +36,6 @@ news_df <- data.frame(Title=title,Url=url)
 ```
 6. 輸出結果
 ```{r}
-print(news_df)
+kable(news_df)
 ```
 

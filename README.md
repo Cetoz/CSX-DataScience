@@ -61,6 +61,7 @@ Topic：Machine Learning
 
 ### Week10
 Topic: Apriori  
+**[Kaggle Presentation](https://cetoz.github.io/CSX-DataScience/Kaggle%20Presentation/Instacart.html)**  
 **[Homework10](https://cetoz.github.io/CSX-DataScience/week_10/hw_10.html)**  
 >使用Kaggle Instacart交易資料集，運用Apriori Algorithm找出關聯項  
 

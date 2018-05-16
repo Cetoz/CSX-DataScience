@@ -4,11 +4,13 @@ author: "FU-HUNG"
 date: "2018年3月22日"
 output: html_document
 ---
+
+# ggplot  
+
+**Aim：練習使用ggplot視覺化內建dataset**  
+
 ## Loading Packages ##
 ```{r, results='hide', message=FALSE, warning=FALSE}
-install.packages('ggplot2',repos = 'https://cloud.r-project.org/')
-install.packages('GGally',repos = 'https://cloud.r-project.org/')
-install.packages('Rmisc',repos = 'https://cloud.r-project.org/')
 library(ggplot2)
 library(Rmisc)
 library(GGally)
