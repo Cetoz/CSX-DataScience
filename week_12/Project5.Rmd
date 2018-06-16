@@ -1,0 +1,87 @@
+---
+title: "Project5"
+author: "FU-HUNG"
+date: "2018年6月16日"
+output: html_document
+---
+#KerasR  
+
+**Aim：使用KerasR建立卷積神經網路(CNN)，用於辨識分類Keras內建資料集fashion_mnist。fashion_mist資料集由Zalando（一家德國的時尚科技公司）提供，內容為來自10種類別的服飾商品，目標是替代已經過時的MNIST資料集。fashion_mnist包含了60000筆training data以及10000筆testing data，28x28灰階圖片，格式均和MNIST相同。**  
+  
+## Loading Package  
+
+```{r}
+library(keras)
+```
+  
+## Import data  
+
+```{r}
+fashiondata <- dataset_fashion_mnist()
+x_train <- fashiondata$train$x
+y_train <- fashiondata$train$y
+x_test <- fashiondata$test$x
+y_test <- fashiondata$test$y
+```
+  
+## Print a image to see what the training data look like  
+
+```{r}
+image(x_train[1,,], col = grey.colors(255))
+```
+  
+## Process the data to fit the CNN requirement  
+
+```{r}
+x_train <- x_train/255
+x_test <- x_test/255
+x_train <- array_reshape(x_train, dim=c(60000,28,28,1))
+x_test <- array_reshape(x_test, dim=c(10000,28,28,1))
+y_train <- to_categorical(y_train,10)
+y_test <- to_categorical(y_test,10)
+```
+  
+## Build Model  
+
+```{r}
+cnnmodel <- keras_model_sequential()
+cnnmodel %>% 
+  layer_conv_2d(filters = 28, kernel_size = 2, padding = 'same', activation = 'relu', input_shape = c(28,28,1)) %>% 
+  layer_conv_2d(filters = 56, kernel_size = 2, padding = 'same', activation = 'relu') %>% 
+  layer_max_pooling_2d(pool_size=c(2,2), strides=c(2,2), padding="same") %>% 
+  layer_conv_2d(filters = 56, kernel_size = 2, padding = 'same', activation = 'relu') %>% 
+  layer_conv_2d(filters = 56, kernel_size = 2, padding = 'same', activation = 'relu') %>% 
+  layer_max_pooling_2d(pool_size=c(2,2), strides=c(2,2), padding="same") %>% 
+  layer_dropout(rate=0.3) %>% 
+  layer_flatten() %>% 
+  layer_dense(units = 128, activation = 'relu', kernel_initializer = 'uniform') %>% 
+  layer_dense(units = 64, activation = 'relu', kernel_initializer = 'uniform') %>% 
+  layer_dense(units = 10,activation = 'softmax')
+summary(cnnmodel)
+
+cnnmodel %>% compile(
+  loss = 'categorical_crossentropy',
+  optimizer = 'adam',
+  metrics = c('accuracy')
+)
+```
+  
+## Training model  
+
+```{r}
+history2 <- cnnmodel %>% fit(
+  x_train,y_train,
+  epoch = 20, batch_size=128,
+  validation_split=0.2
+)
+
+plot(history2)
+```
+  
+## Evaluate model prediction accuracy  
+
+```{r}
+cnnmodel %>% evaluate(x_test, y_test)
+```
+
+小結：在此處所建構的CNN模型，在training data的accuracy約達0.97，在testing data的accuracy約達到0.92。
