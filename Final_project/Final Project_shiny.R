@@ -1,3 +1,6 @@
+library(leaflet)
+library(shinyWidgets)
+library(dplyr)
 library(shiny)
 library(shinyWidgets)
 library(dplyr)
@@ -6,10 +9,19 @@ library(ggmap)
 library(DT)
 library(leaflet)
 
+
+
+
 #匯入資料
 index <- readRDS("index.rds")
 weather <- readRDS("weather.rds")
 dengue <- readRDS("dengue.rds")
+dengue$Imported <- as.numeric(dengue$Imported)-1
+lst <- strsplit(dengue$yearmonth, split = "-")
+FlatColumn <- unlist(lst, use.names = FALSE)
+m <- matrix(FlatColumn,byrow=T,ncol=2)
+dengue$year = m[,1]
+rm(lst,FlatColumn,m)
 centerlon <- (max(index$VillageLon, na.rm = TRUE)+min(index$VillageLon, na.rm = TRUE))/2
 centerlat <- (max(index$VillageLat, na.rm = TRUE)+min(index$VillageLat, na.rm = TRUE))/2
 map <- get_map(location = c(lon = centerlon, lat = centerlat), language = "zh-TW")
@@ -18,13 +30,6 @@ selectdate <- function(x){substr(as.character(x), start = 6, stop = 10)}
 #=============================================================================
 ui = fluidPage(
   headerPanel("台南市登革熱疫情趨勢分析", windowTitle = "台南市登革熱疫情趨勢分析"),
-###############################################################
-    fluidRow(column(4,
-                  "選取日期放這裡",
-                  style='margin-bottom:30px;border:1px solid; padding: 10px;'),
-           column(8,
-                  "輸出圖表放這裡")),
-###############################################################
   fluidRow(column(4,
                   h3("登革熱分布地區"),
                   sliderTextInput(inputId = "timefordengue",
@@ -36,6 +41,22 @@ ui = fluidPage(
            column(8,
                   leafletOutput(outputId = "dengueplot"))
            
+  ),br(),
+  
+  fluidRow(column(4,
+                  h3("登革熱本土與境外病例"),
+                  radioButtons(inputId = "region", label = "Infected Region",
+                               choices = c("Republic of China" = "1",
+                                           "Other Countries" = "0")),
+                  br(),
+                  sliderInput("n",
+                              "Year:",
+                              value = 2015,
+                              min = 2013,
+                              max = 2017),
+                  style='margin-bottom:30px;border:1px solid; padding: 10px;'),
+           column(8,
+                  leafletOutput(outputId = "plot"))
   ),br(),
   
   fluidRow(column(4,
@@ -117,21 +138,21 @@ ui = fluidPage(
                            choices = unique(selectdate(index$Date)),
                            selected = unique(selectdate(index$Date))[1],
                            animate = animationOptions(interval = 3000)
-                           ),
-           style='margin-bottom:30px;border:1px solid; padding: 10px;'
            ),
+           style='margin-bottom:30px;border:1px solid; padding: 10px;'
+    ),
     column(8,
            tabsetPanel(
              tabPanel("Plot",plotOutput(outputId = "indexBI"),plotOutput(outputId = "indexHI")),
              tabPanel("Data",dataTableOutput(outputId = "indexdata"))
-             )
            )
     )
   )
+)
 
 
 
-                      
+
 #reactive data========================================================================
 server <- function(input, output){
   current_time_dengue <- reactive({
@@ -154,10 +175,22 @@ server <- function(input, output){
   current_date_index <- reactive({
     filter(index, index$Date == as.Date(paste0(input$yearforindex,"-",input$dateforindex)))
   })
+  current_region <- reactive({
+    filter(dengue, Imported==input$region)
+  })
+  current_year <- reactive({
+    filter(current_region(), year==input$n)
+  })
   
-#Plot======================================================================
-
-    output$dengueplot <- renderLeaflet({
+  #Plot======================================================================
+  output$plot <- renderLeaflet({
+    leaflet(current_year()) %>% 
+      addTiles() %>% 
+      addCircleMarkers(~current_year()$Enumeration_unit_long, ~current_year()$Enumeration_unit_lat, radius = 1, fillOpacity = 0.5) %>% 
+      setView(lng = 120.41, lat = 23.54, zoom = 7)
+  })
+  
+  output$dengueplot <- renderLeaflet({
     leaflet(current_time_dengue()) %>% 
       addTiles() %>% 
       addCircleMarkers(~current_time_dengue()$Enumeration_unit_long, ~current_time_dengue()$Enumeration_unit_lat, radius = 1, fillOpacity = 0.5) %>% 
@@ -188,10 +221,10 @@ server <- function(input, output){
   })
   output$tempdatamonth <- renderDataTable({
     datatable(data = current_year_temp() %>% group_by(month) %>% summarise(averageTemp = round(mean(temp), digit = 2)),
-    colnames = c("Month","Tempature(℃)"),
-    rownames = FALSE,
-    options = list(pageLength = 12))
-    })
+              colnames = c("Month","Tempature(℃)"),
+              rownames = FALSE,
+              options = list(pageLength = 12))
+  })
   
   output$precpplot <- renderPlot({
     ggplot(data = group_by(current_year_precp(), month) %>% summarise(sumprecp = sum(precp)),
