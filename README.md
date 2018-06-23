@@ -95,7 +95,11 @@ Topic：Deep learning introduction_Part2
 >**[Project5-KerasR](https://cetoz.github.io/CSX-DataScience/week_12/Project5.html)**  
 
 - 使用KerasR建立卷積神經網路(CNN)，辨識資料集`fashion_mnist`
- 
+
+### Final Project
+  
+>**[登革熱數據分析](https://zoey7407.github.io/CSX_RProject_Spring_2018/final/dg.html)**  
+
 ---
 - [DataScience_Gitbook](https://pecu.gitbooks.io/r_/content/)
 - [DataScience_GitHub](https://github.com/NTU-CSX-DataScience/106-2RSampleCode)
